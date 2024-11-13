@@ -124,7 +124,7 @@ for file in $files; do
         # Считываем первую строку для получения имён лейблов (пропускаем первый столбец)
         IFS=$'\t' read -r _ label2 label3 label4 label5 label6 label7 < "$file"
 
-        # Используем awk для обработки строк в файле
+        # Используем awk для обработки строк в файле и исключаем 7-й лейбл из передачи в 9-й
         awk -F'\t' -v url="$url" -v label2_name="$label2" -v label3_name="$label3" -v label4_name="$label4" -v label5_name="$label5" -v label6_name="$label6" -v label7_name="$label7" '
         NR > 1 {
             col1 = $1
@@ -135,7 +135,7 @@ for file in $files; do
             col6 = ($6 == "" ? "NULL" : "\"" $6 "\"")
             col7 = ($7 == "" ? "NULL" : "\"" $7 "\"")
 
-            data_value = "CV{" label2_name "=" col2 ", " label3_name "=" col3 ", " label4_name "=" col4 ", " label5_name "=" col5 ", " label6_name "=" col6 ", " label7_name "=" col7 "} " col1
+            data_value = "CV{" label2_name "=" col2 ", " label3_name "=" col3 ", " label4_name "=" col4 ", " label5_name "=" col5 ", " label6_name "=" col6 "} " col1  # Исключаем label7
 
             cmd = "curl -s -w \"%{http_code}\" -o /dev/null -X POST -d \047" data_value "\047 " url
             cmd | getline response_value
