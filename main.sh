@@ -65,12 +65,12 @@ for file in $files; do
 
     # Обработка файлов с "NV" в имени
     if [[ "$file" == *NV* ]]; then
-        # Считываем первую строку для получения значений лейблов
-        IFS=$'\t' read -r label1 label2 label3 label4 label5 label6 < "$file"
+        # Считываем первую строку для получения значений лейблов (пропускаем первый столбец)
+        IFS=$'\t' read -r _ label2 label3 label4 label5 label6 < "$file"
 
         while IFS=$'\t' read -r col1 col2 col3 col4 col5; do
             # Формируем данные для отправки метрики NV
-            data_value="NV{$label1=\"$col1\", $label2=\"$col2\", $label3=\"$col3\", $label4=\"$col4\"} $col5"
+            data_value="NV{$label2=\"$col2\", $label3=\"$col3\", $label4=\"$col4\"} $col5"
 
             # Отправляем метрику
             response_value=$(curl -s -w "%{http_code}" -o /dev/null -X POST -d "$data_value" "$url")
@@ -86,19 +86,16 @@ for file in $files; do
 
     # Обработка файлов с "LV" в имени
     elif [[ "$file" == *LV* ]]; then
-        # Считываем первую строку для получения значений лейблов
-        IFS=$'\t' read -r header_col1 label2 label3 label4 label5 label6 label7 < "$file"
-
-        # Обработка label1: заменяем пробелы и скобки на подчеркивания, удаляем их с конца
-        label1=$(echo "$header_col1" | tr -s ' ' '_' | tr -s '(' '_' | tr -s ')' '_' | sed 's/[ _]$//')
+        # Считываем первую строку для получения значений лейблов (пропускаем первый столбец)
+        IFS=$'\t' read -r _ label2 label3 label4 label5 label6 label7 < "$file"
 
         while IFS=$'\t' read -r col1 col2 col3 col4 col5 col6 col7; do
             # Заменяем пробелы и скобки на подчеркивание в первом столбце
             formatted_col1=$(echo "$col1" | tr -s ' ' '_' | tr -s '(' '_' | tr -s ')' '_' | sed 's/[ _]$//')
 
             # Формируем данные для отправки метрик
-            data_value1="LV{label1=\"$label1\", label2=\"$label2\"} $col2"
-            data_value2="LV{label1=\"$label1\", label2=\"$label3\"} $col3"
+            data_value1="LV{label2=\"$label2\"} $col2"
+            data_value2="LV{label2=\"$label3\"} $col3"
 
             # Отправляем первые метрики
             response_value1=$(curl -s -w "%{http_code}" -o /dev/null -X POST -d "$data_value1" "$url")
@@ -124,8 +121,8 @@ for file in $files; do
 
     # Обработка файлов с "CV" в имени
     elif [[ "$file" == *CV* ]]; then
-        # Считываем первую строку для получения имён лейблов
-        IFS=$'\t' read -r label2 label3 label4 label5 label6 label7 < "$file"
+        # Считываем первую строку для получения имён лейблов (пропускаем первый столбец)
+        IFS=$'\t' read -r _ label2 label3 label4 label5 label6 label7 < "$file"
 
         # Используем awk для обработки строк в файле
         awk -F'\t' -v url="$url" -v label2_name="$label2" -v label3_name="$label3" -v label4_name="$label4" -v label5_name="$label5" -v label6_name="$label6" -v label7_name="$label7" '
